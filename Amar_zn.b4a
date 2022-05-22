@@ -1,0 +1,236 @@
+﻿Version=7.3
+NumberOfModules=8
+Module1=Starter
+Module2=DBUtils
+Module3=actSal
+Module4=actSalChild
+Module5=actSalViewer
+Module6=actSearch
+Module7=actOtherViewer
+Module8=SearchView
+Build1=Default,mpozn.amarzn
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: https://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'SetActivityAttribute(actFarabar, android:screenOrientation, "landscape")~\n~'End of default text.~\n~
+IconFile=
+NumberOfFiles=21
+File1=amar96.db
+File2=back.png
+File3=byekan.ttf
+File4=chart.png
+File5=d.png
+File6=f_dis.png
+File7=f_en.png
+File8=header.png
+File9=header_sal.png
+File10=icon.png
+File11=intro.png
+File12=layhome.bal
+File13=layotherviewer.bal
+File14=laysal.bal
+File15=laysalchild.bal
+File16=laySalViewer.bal
+File17=laysearch.bal
+File18=map.png
+File19=search.png
+File20=table.png
+File21=welcome.png
+NumberOfLibraries=7
+Library1=core
+Library2=sql
+Library3=animation
+Library4=phone
+Library5=reflection
+Library6=okhttputils2
+Library7=ime
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: سالنامه آماری زنجان
+	#VersionCode: 4
+	#VersionName: 1.4
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: False
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: True
+	#IncludeTitle: False
+#End Region
+
+Sub Process_Globals
+	Dim pageTitle As String
+	Dim pageUrl As String
+	Dim welcomeTimer As Timer
+End Sub
+
+Sub Globals
+	Dim welcomePanel As Panel
+	Dim homePanel As Panel
+	Private btnAbout As Panel
+	Private btnSal As Panel
+	Private btnHamkar As Panel
+	Private btnManabe As Panel
+	Private btnPish As Panel
+	Private headerImg As ImageView
+	Dim jobUpdateAPK, jobAutoWebVersion As HttpJob
+	Private versionLabel As Label
+	Dim sal_anim As Animation
+	Private headerImg_sal As ImageView
+End Sub
+
+Sub SetTypeface(parent As Panel, t As Typeface)
+	For Each v As View In parent
+		If v Is Panel Then
+			SetTypeface(v, t)
+		Else If v Is Label Then
+			Dim lbl As Label = v
+			lbl.Typeface = t
+		End If
+	Next
+End Sub
+
+Sub Connected As Boolean
+	Dim p As Phone
+	Dim Response, Error As StringBuilder
+	Response.Initialize
+	Error.Initialize
+	p.Shell("ping -c 1 8.8.8.8",Null,Response,Error)
+	If Error.ToString="" Then
+		Return True
+	Else
+		Return False
+	End If
+End Sub
+
+Sub Activity_Create (FirstTime As Boolean)
+	Activity.LoadLayout("layhome")
+	
+	Dim myFont As Typeface
+	myFont= Typeface.LoadFromAssets("BYekan.ttf")
+	SetTypeface(homePanel,myFont)
+	
+	versionLabel.Text = "Version: " & Application.VersionName
+	
+	showWelcome(3000)
+
+End Sub
+
+Sub showWelcome(duration As Int)
+	EnableAll(homePanel,False)
+	welcomeTimer.Initialize("welTimer",duration)
+	welcomeTimer.Enabled = True
+End Sub
+
+Sub welTimer_tick
+	welcomeTimer.Enabled = False
+	welcomePanel.Visible = False
+	homePanel.Visible = True
+	EnableAll(homePanel,True)
+	
+	If Connected Then
+		jobAutoWebVersion.Initialize("jobAutoWebVersion", Me)
+		jobAutoWebVersion.Download("http://www.limopack.com/appup/amar.inf")
+	Else
+		ToastMessageShow("ارتباط با اینترنت برقرار نیست.",True)
+	End If
+	
+	sal_anim.InitializeScaleCenter("sal_anim",1,1,1.05,1.05,headerImg_sal) 
+	sal_anim.RepeatMode = sal_anim.REPEAT_REVERSE
+	sal_anim.Duration = 1000
+	sal_anim.RepeatCount = 10
+	sal_anim.Start(headerImg_sal)
+	
+End Sub
+
+Sub Activity_Resume
+	
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	
+End Sub
+
+Sub EnableAll(p As Panel, Enabled As Boolean)
+	For Each v As View In p
+		If v Is Panel Then
+			EnableAll(v, Enabled)
+		Else
+			v.Enabled = Enabled
+		End If
+	Next
+End Sub
+
+Sub Activity_KeyPress (KeyCode As Int) As Boolean 'Return True to consume the event
+	If KeyCode = KeyCodes.KEYCODE_BACK Then
+		If Msgbox2("آیا میخواهید از برنامه خارج شوید؟", "توجه", "بلی", "", "خیر", Null) =DialogResponse.POSITIVE Then
+			Activity.finish
+		End If
+	End If
+	Return True
+End Sub
+
+Sub btnSal_Click
+	pageTitle = "سالنامه آماری زنجان"		
+	StartActivity(actSal)
+End Sub
+
+Sub btnPish_Click	
+	pageTitle = "پیشگفتار"
+	pageUrl = "file:///android_asset/data/pish.htm"
+	StartActivity(actOtherViewer)
+End Sub
+
+Sub btnHamkar_Click
+	pageTitle = "اسامی همکاران"
+	pageUrl = "file:///android_asset/data/hamkar.htm"
+	StartActivity(actOtherViewer)
+End Sub
+
+Sub btnManabe_Click
+	pageTitle = "منابع و مآخذ"
+	pageUrl = "file:///android_asset/data/manabe.htm"
+	StartActivity(actOtherViewer)
+End Sub
+
+Sub btnAbout_Click
+	If Connected Then
+		Dim pi As PhoneIntents
+		StartActivity(pi.OpenBrowser("http://www.mpo-zn.ir"))
+	Else
+		ToastMessageShow("ارتباط با اینترنت برقرار نیست.",True)
+	End If
+End Sub
+
+Sub JobDone(job As HttpJob)
+	If job.Success = True Then
+		Select job.JobName
+			Case "jobAutoWebVersion"
+				' read file:
+				Dim webVersion As String
+				Dim Buffer(3) As Byte
+				job.GetInputStream.ReadBytes(Buffer,0,Buffer.Length)
+				webVersion = BytesToString(Buffer,0,Buffer.Length,"UTF8")
+				If Application.VersionName < webVersion Then
+					If Msgbox2("نسخه "&webVersion&" موجود است. آیا میخواهید به روز رسانی انجام شود؟","به روز رسانی" ,"بلی","","خیر",Null) = DialogResponse.POSITIVE Then
+						ProgressDialogShow("در حال به روز رسانی نرم افزار" & CRLF & "لطفا منتظر بمانید")
+						jobUpdateAPK.Initialize("jobUpdateAPK", Me)
+						jobUpdateAPK.Download("http://www.limopack.com/appup/Amar_zn.apk")
+					End If
+				End If
+			Case "jobUpdateAPK"
+				'copy from external to storage card
+				Dim out As OutputStream
+				out = File.OpenOutput(File.DirDefaultExternal,"Amar_zn.apk",False)
+				File.Copy2(job.GetInputStream, out)
+				out.Close
+				ProgressDialogHide
+				'intent to install
+				Dim i As Intent
+				i.Initialize(i.ACTION_VIEW, "file://" & File.Combine(File.DirDefaultExternal, "Amar_zn.apk"))
+				i.SetType("application/vnd.android.package-archive")
+				StartActivity(i)
+		End Select
+	Else
+		ToastMessageShow("Error: " & job.ErrorMessage, True)
+	End If
+	job.Release
+End Sub
